@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI-powered Resume Analyzer — Upload your resume and get personalized job & internship recommendations instantly.">
+    <title>ResumeAI — Smart Resume Analyzer & Job Recommender</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+
+<!-- ═══════════════════ NAVBAR ═══════════════════ -->
+<nav class="navbar" id="navbar">
+    <div class="nav-container">
+        <a href="#" class="nav-logo">
+            <span class="logo-icon">
+                <svg width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#6366f1" />
+                            <stop offset="100%" stop-color="#a855f7" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="0" y="0" width="100" height="100" rx="25" fill="url(#logoGrad)" />
+                    <path d="M 32 22 L 55 22 L 75 42 L 75 72 A 6 6 0 0 1 69 78 L 32 78 A 6 6 0 0 1 26 72 L 26 28 A 6 6 0 0 1 32 22 Z" fill="none" stroke="white" stroke-width="8" stroke-linejoin="round"/>
+                    <path d="M 55 22 L 55 36 A 6 6 0 0 0 61 42 L 75 42" fill="none" stroke="white" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+                    <line x1="40" y1="45" x2="50" y2="45" stroke="white" stroke-width="8" stroke-linecap="round" />
+                    <line x1="40" y1="58" x2="65" y2="58" stroke="white" stroke-width="8" stroke-linecap="round" />
+                    <line x1="40" y1="71" x2="65" y2="71" stroke="white" stroke-width="8" stroke-linecap="round" />
+                </svg>
+            </span>
+            <span class="logo-text">Resume<span class="logo-accent">AI</span></span>
+        </a>
+        <div class="nav-links">
+            <a href="#upload-section" class="nav-link">Analyze</a>
+            <a href="#how-it-works" class="nav-link">How It Works</a>
+            <a href="#" class="nav-link nav-link-apps" id="nav-my-apps" style="display:none;">My Applications</a>
+            <button class="theme-toggle" id="music-toggle" aria-label="Toggle ambient music" title="Toggle music" style="margin-right: 8px;">
+                <svg class="music-icon music-icon-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+                <svg class="music-icon music-icon-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+            </button>
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark/light theme" title="Toggle theme">
+                <svg class="theme-icon theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                <svg class="theme-icon theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            </button>
+            <!-- Auth buttons (shown when logged out) -->
+            <a href="/login" class="btn btn-ghost btn-nav-auth" id="nav-login-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                Login
+            </a>
+            <!-- User menu (shown when logged in) -->
+            <div class="user-menu" id="user-menu" style="display:none;">
+                <button class="user-avatar-btn" id="user-avatar-btn">
+                    <span class="user-avatar" id="user-avatar">U</span>
+                    <span class="user-name-nav" id="user-name-nav">User</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="user-dropdown" id="user-dropdown">
+                    <div class="user-dropdown-header">
+                        <span class="user-dropdown-name" id="user-dropdown-name">User</span>
+                        <span class="user-dropdown-email" id="user-dropdown-email">user@email.com</span>
+                    </div>
+                    <hr class="user-dropdown-divider">
+                    <button class="user-dropdown-item" id="nav-apps-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                        My Applications
+                    </button>
+                    <button class="user-dropdown-item user-dropdown-logout" id="logout-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+
+
+<!-- ═══════════════════ LANDING VIEW ═══════════════════ -->
+<div id="view-landing" class="view active">
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<section class="hero" id="hero">
+    <div class="hero-bg">
+        <div class="hero-orb hero-orb-1"></div>
+        <div class="hero-orb hero-orb-2"></div>
+        <div class="hero-orb hero-orb-3"></div>
+    </div>
+    <div class="hero-content">
+        <div class="hero-badge">
+            <span class="badge-dot"></span>
+            AI-Powered Resume Analysis
+        </div>
+        <h1 class="hero-title">
+            Your Resume,<br>
+            <span class="hero-gradient-text">Supercharged.</span>
+        </h1>
+        <p class="hero-subtitle">
+            Upload your resume and get instant AI-powered skill analysis,
+            career category prediction, and personalized job & internship recommendations.
+        </p>
+        <div class="hero-cta">
+            <a href="#upload-section" class="btn btn-primary btn-lg" id="hero-cta-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Upload Resume
+            </a>
+            <a href="#how-it-works" class="btn btn-ghost btn-lg">
+                Learn More
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </a>
+        </div>
+        <div class="hero-stats">
+            <div class="stat-item">
+                <span class="stat-number" id="stat-skills">AI</span>
+                <span class="stat-label">Skill Extraction</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-number" id="stat-jobs">Live...</span>
+                <span class="stat-label">Live Jobs (sample)</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-number" id="stat-categories">...</span>
+                <span class="stat-label">Career Categories</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════ HOW IT WORKS ═══════════════════ -->
+<section class="section how-it-works" id="how-it-works">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-badge">Simple Process</span>
+            <h2 class="section-title">How It Works</h2>
+            <p class="section-subtitle">Three simple steps to unlock your career potential</p>
+        </div>
+        <div class="steps-grid">
+            <div class="step-card" style="--delay: 0s">
+                <div class="step-number">01</div>
+                <div class="step-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                </div>
+                <h3>Upload Resume</h3>
+                <p>Drag & drop your resume in PDF, DOCX, or TXT format. We support all common resume formats.</p>
+            </div>
+            <div class="step-card" style="--delay: 0.15s">
+                <div class="step-number">02</div>
+                <div class="step-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+                <h3>AI Analysis</h3>
+                <p>Our ML engine extracts skills, predicts your career category, and calculates a quality score.</p>
+            </div>
+            <div class="step-card" style="--delay: 0.3s">
+                <div class="step-number">03</div>
+                <div class="step-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                </div>
+                <h3>Get Recommendations</h3>
+                <p>Receive personalized job & internship matches ranked by compatibility with your profile.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════ UPLOAD SECTION ═══════════════════ -->
+<section class="section upload-section" id="upload-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-badge">Get Started</span>
+            <h2 class="section-title">Analyze Your Resume</h2>
+            <p class="section-subtitle">Upload your resume and let AI do the heavy lifting</p>
+        </div>
+
+        <div class="upload-wrapper">
+            <div class="upload-zone" id="upload-zone">
+                <div class="upload-zone-content">
+                    <div class="upload-icon-wrapper">
+                        <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    </div>
+                    <h3 class="upload-title">Drop your resume here</h3>
+                    <p class="upload-subtitle">or <span class="upload-browse" id="upload-browse">browse files</span></p>
+                    <p class="upload-formats">Supports PDF, DOCX, TXT — Max 10 MB</p>
+                </div>
+                <input type="file" id="file-input" accept=".pdf,.docx,.doc,.txt" hidden>
+            </div>
+
+            <!-- File Preview -->
+            <div class="file-preview" id="file-preview" style="display: none;">
+                <div class="file-preview-info">
+                    <div class="file-icon" id="file-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </div>
+                    <div class="file-details">
+                        <span class="file-name" id="file-name"></span>
+                        <span class="file-size" id="file-size"></span>
+                    </div>
+                    <button class="file-remove" id="file-remove" aria-label="Remove file">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+                <button class="btn btn-primary btn-lg btn-analyze" id="analyze-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/></svg>
+                    Analyze Resume
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+</div> <!-- End view-landing -->
+
+<!-- ═══════════════════ LOADING STATE ═══════════════════ -->
+<section class="section loading-section" id="loading-section" style="display: none;">
+    <div class="container">
+        <div class="loading-card">
+            <div class="loading-spinner">
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+            </div>
+            <h3 class="loading-title">Analyzing Your Resume</h3>
+            <p class="loading-subtitle" id="loading-text">Extracting text and detecting skills...</p>
+            <div class="loading-progress">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════ RESULTS ═══════════════════ -->
+<div class="app-shell" id="app-shell" style="display: none;">
+    <aside class="dashboard-sidebar">
+        <ul class="sidebar-nav">
+            <li><button class="sidebar-link active" data-target="view-overview">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                Overview
+            </button></li>
+            <li><button class="sidebar-link" data-target="view-skills">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                Skills & Gap
+            </button></li>
+            <li><button class="sidebar-link" data-target="view-jobs">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                Job Matches
+            </button></li>
+            <li><button class="sidebar-link" data-target="view-optimizer">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                AI Optimizer
+            </button></li>
+        </ul>
+    </aside>
+    <main class="dashboard-content">
+        <!-- VIEW: OVERVIEW -->
+        <div id="view-overview" class="dashboard-view active">
+
+        <!-- Overview Cards -->
+        <div class="results-header">
+            <div class="section-header">
+                <span class="section-badge section-badge-success">Analysis Complete</span>
+                <h2 class="section-title">Your Resume Report</h2>
+            </div>
+        </div>
+
+        <div class="overview-grid" id="overview-grid">
+            <!-- Quality Score -->
+            <div class="overview-card overview-card-score clickable" onclick="openQualityModal()">
+                <div class="score-ring-wrapper">
+                    <svg class="score-ring" viewBox="0 0 120 120">
+                        <circle class="score-ring-bg" cx="60" cy="60" r="52" />
+                        <circle class="score-ring-fill" cx="60" cy="60" r="52" id="quality-ring" />
+                    </svg>
+                    <span class="score-value" id="quality-score">0</span>
+                </div>
+                <div class="overview-label">Resume Quality</div>
+                <div class="card-hint">Click for Deep Analysis</div>
+            </div>
+
+            <!-- Skills Count -->
+            <div class="overview-card">
+                <div class="overview-icon overview-icon-skills">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                <div class="overview-number" id="skill-count">0</div>
+                <div class="overview-label">Skills Detected</div>
+            </div>
+
+            <!-- Word Count -->
+            <div class="overview-card">
+                <div class="overview-icon overview-icon-words">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                </div>
+                <div class="overview-number" id="word-count">0</div>
+                <div class="overview-label">Words</div>
+            </div>
+
+            <!-- Jobs Found -->
+            <div class="overview-card">
+                <div class="overview-icon overview-icon-jobs">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                </div>
+                <div class="overview-number" id="jobs-count">0</div>
+                <div class="overview-label">Jobs Matched</div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════ QUALITY BREAKDOWN MODAL ═══════════════════ -->
+        <div class="auth-overlay" id="quality-modal" style="display: none; z-index: 2000;">
+            <div class="auth-modal" style="max-width: 600px; width: 95%;">
+                <button class="auth-close" id="quality-close" aria-label="Close modal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+                <div class="auth-header" style="text-align: left; margin-bottom: 2rem;">
+                    <h2 class="auth-title">Resume Intelligence Report</h2>
+                    <p class="auth-subtitle" id="quality-modal-summary">Deep analysis based on standard recruitment criteria.</p>
+                </div>
+                
+                <div class="quality-breakdown-list" id="quality-breakdown-list">
+                    <!-- Progress bars will be injected here -->
+                </div>
+
+                <div class="quality-footer" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                    <div style="display: flex; align-items: start; gap: 12px; color: var(--text-muted); font-size: 0.85rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-top: 2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <span>This score is calculated by cross-referencing your content against hundreds of high-quality resume patterns.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+        .overview-card.clickable {
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .overview-card.clickable:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent-1);
+            background: var(--bg-card-alt);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.3), 0 0 15px rgba(99, 102, 241, 0.1);
+        }
+        .card-hint {
+            font-size: 0.6rem;
+            color: var(--accent-1);
+            text-transform: uppercase;
+            font-weight: 800;
+            margin-top: 10px;
+            letter-spacing: 0.5px;
+            opacity: 0.8;
+        }
+
+        .q-item { margin-bottom: 24px; }
+        .q-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .q-text { font-weight: 700; font-size: 0.95rem; }
+        .q-val { color: var(--accent-1); font-weight: 800; }
+        .q-bar-bg { height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+        .q-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent-1), var(--accent-2), var(--accent-1)); background-size: 200% auto; animation: gradient-pan 3s linear infinite; border-radius: 5px; transition: width 1.2s ease-out; }
+        .q-feedback { font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; }
+        </style>
+
+        <!-- Category Prediction -->
+        <div class="result-block" id="category-block">
+            <h3 class="result-block-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                Predicted Career Category
+            </h3>
+            <div class="category-bars" id="category-bars"></div>
+            <div class="category-state-banner" id="category-state-banner" style="display:none;">
+                <p id="category-state-text"></p>
+            </div>
+            <div class="category-confirm-panel" id="category-confirm-panel" style="display:none;">
+                <div class="confirm-panel-title">Confirm your category</div>
+                <div class="category-confirm-options" id="category-confirm-options"></div>
+                <label class="remember-category-label">
+                    <input type="checkbox" id="remember-category" />
+                    Remember this preference for low-confidence runs
+                </label>
+            </div>
+        </div>
+
+        <style>
+        .category-state-banner {
+            margin-top: 12px;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            background: var(--bg-card);
+        }
+        .category-state-banner.low-confidence {
+            border-color: rgba(251, 191, 36, 0.45);
+            background: rgba(251, 191, 36, 0.08);
+            color: #fef3c7;
+        }
+        .category-state-banner.high-confidence {
+            border-color: rgba(52, 211, 153, 0.35);
+            background: rgba(52, 211, 153, 0.08);
+        }
+        .category-state-banner p {
+            margin: 0;
+        }
+        .category-confirm-panel {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            background: var(--bg-card-alt);
+        }
+        .confirm-panel-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+        .category-confirm-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .confirm-choice-btn {
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border-radius: var(--radius-sm);
+            padding: 6px 10px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+        .confirm-choice-btn:hover,
+        .confirm-choice-btn.active {
+            border-color: var(--accent-1);
+            color: var(--accent-1);
+            background: rgba(99, 102, 241, 0.08);
+        }
+        .remember-category-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        </style>
+
+        </div>
+
+        <!-- VIEW: SKILLS -->
+        <div id="view-skills" class="dashboard-view">
+<!-- 🚀 NEW: Skills Gap Roadmap -->
+        <div class="result-block" id="skills-gap-block" style="display: none;">
+            <div class="gap-card">
+                <div class="gap-header">
+                    <div class="gap-title-group">
+                        <h3 class="result-block-title" style="margin-bottom: 4px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/></svg>
+                            Career Readiness Roadmap
+                        </h3>
+                        <p class="gap-subtitle">Analysis for <span id="gap-target-category" style="color:var(--accent-1); font-weight:600;">...</span></p>
+                    </div>
+                    <div class="gap-readiness">
+                        <div class="readiness-circle">
+                            <svg viewBox="0 0 36 36" class="circular-chart">
+                                <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                <path class="circle-fill" id="readiness-path" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                <text x="18" y="20.35" class="percentage" id="readiness-percentage">0%</text>
+                            </svg>
+                        </div>
+                        <span class="readiness-label">Ready</span>
+                    </div>
+                </div>
+                
+                <div class="gap-content">
+                    <div class="gap-section">
+                        <div class="gap-section-title">
+                            <span class="dot matched"></span> Mastered Skills
+                        </div>
+                        <div class="gap-skills-list" id="gap-matched-list"></div>
+                    </div>
+                    
+                    <div class="gap-section">
+                        <div class="gap-section-title">
+                            <span class="dot missing"></span> Skill Gaps to Close
+                        </div>
+                        <div class="gap-skills-list" id="gap-missing-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+        .gap-card {
+            background: var(--bg-card-alt);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+        .gap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .gap-subtitle {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        .gap-readiness {
+            text-align: center;
+            min-width: 100px;
+        }
+        .circular-chart {
+            display: block;
+            margin: 0 auto;
+            max-width: 70px;
+            max-height: 70px;
+        }
+        .circle-bg {
+            fill: none;
+            stroke: var(--border-color);
+            stroke-width: 3;
+        }
+        .circle-fill {
+            fill: none;
+            stroke: var(--accent-1);
+            stroke-width: 3;
+            stroke-linecap: round;
+            transition: stroke-dasharray 1s ease-in-out;
+        }
+        .percentage {
+            fill: var(--text-primary);
+            font-family: var(--font-main);
+            font-size: 0.5rem;
+            text-anchor: middle;
+            font-weight: 700;
+        }
+        .readiness-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        .gap-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        @media (max-width: 768px) {
+            .gap-content { grid-template-columns: 1fr; }
+        }
+        .gap-section-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .dot.matched { background: var(--accent-green); box-shadow: 0 0 10px var(--accent-green); }
+        .dot.missing { background: var(--accent-red); box-shadow: 0 0 10px var(--accent-red); }
+        
+        .gap-skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .gap-skill-item {
+            padding: 6px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .learn-btn {
+            padding: 2px 6px;
+            background: var(--accent-1);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .learn-btn:hover {
+            filter: brightness(1.2);
+            transform: scale(1.1);
+        }
+        </style>
+
+        <!-- Skills Breakdown -->
+        <div class="result-block" id="skills-block">
+            <h3 class="result-block-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                Skills Detected
+            </h3>
+            <div class="skills-groups" id="skills-groups"></div>
+        </div>
+
+        </div>
+
+        <!-- VIEW: OPTIMIZER -->
+        <div id="view-optimizer" class="dashboard-view">
+
+        <!-- 🤖 AI OPTIMIZATION LAB -->
+        <div class="result-block" id="ai-optimization-block">
+            <h3 class="result-block-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                AI Optimization Lab
+            </h3>
+            <div class="ai-lab-card">
+                <div class="ai-lab-header">
+                    <p class="ai-lab-subtitle">Transform weak bullet points into impactful, data-driven achievements.</p>
+                </div>
+                <div class="ai-lab-content">
+                    <div class="ai-input-group">
+                        <textarea id="ai-refine-input" placeholder="Example: Worked on a React dashboard and fixed some bugs..."></textarea>
+                        <button class="btn btn-primary" id="ai-refine-btn">
+                            <span class="btn-text">Refine with Gemini</span>
+                            <div class="btn-loader" style="display:none;"></div>
+                        </button>
+                    </div>
+                    <div class="ai-output-group" id="ai-refine-output-group" style="display: none;">
+                        <div class="ai-output-header">
+                            <span class="ai-output-label">Optimized Version:</span>
+                            <button class="ai-copy-btn" id="ai-copy-btn" title="Copy to clipboard">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                            </button>
+                        </div>
+                        <div class="ai-output-text" id="ai-refine-output"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+        .ai-lab-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(168, 85, 247, 0.05) 100%);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .ai-lab-card::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: var(--accent-1);
+            filter: blur(80px);
+            opacity: 0.1;
+            pointer-events: none;
+        }
+        .ai-lab-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+        .ai-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        #ai-refine-input {
+            width: 100%;
+            min-height: 100px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+            transition: var(--transition-fast);
+        }
+        #ai-refine-input:focus {
+            outline: none;
+            border-color: var(--accent-1);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        .ai-output-group {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: var(--radius-md);
+            border-left: 4px solid var(--accent-1);
+            animation: fadeIn 0.5s ease-out;
+        }
+        .ai-output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .ai-output-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 800;
+            color: var(--accent-1);
+            letter-spacing: 1px;
+        }
+        .ai-output-text {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+            font-style: italic;
+        }
+        .ai-copy-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+        .ai-copy-btn:hover {
+            color: var(--accent-1);
+            background: rgba(255,255,255,0.05);
+        }
+        .btn-loader {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-top: -8px;
+            margin-left: -8px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        </style>
+
+        </div>
+
+        <!-- VIEW: JOBS -->
+        <div id="view-jobs" class="dashboard-view">
+<!-- Job Recommendations -->
+        <div class="result-block" id="jobs-block">
+            <h3 class="result-block-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                Recommended Jobs & Internships
+            </h3>
+            <div class="ranking-meta" id="ranking-meta" style="display:none;"></div>
+            <div class="jobs-filter" id="jobs-filter">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="full-time">Full-time</button>
+                <button class="filter-btn" data-filter="internship">Internship</button>
+            </div>
+            <div class="jobs-grid" id="jobs-grid"></div>
+        </div>
+
+                </div>
+
+<!-- Try Again -->
+        <div class="try-again-wrapper">
+            <button class="btn btn-ghost btn-lg" id="try-again-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                Analyze Another Resume
+            </button>
+        </div>
+    </div>
+    </main>
+</div> <!-- End app-shell -->
+
+<!-- ═══════════════════ ERROR STATE ═══════════════════ -->
+<div class="error-toast" id="error-toast" style="display: none;">
+    <div class="error-toast-content">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        <span id="error-message"></span>
+        <button class="error-close" id="error-close" aria-label="Close error">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+</div>
+
+<!-- ═══════════════════ SUCCESS TOAST ═══════════════════ -->
+<div class="success-toast" id="success-toast" style="display: none;">
+    <div class="success-toast-content">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span id="success-message"></span>
+    </div>
+</div>
+
+<!-- ═══════════════════ MY APPLICATIONS MODAL ═══════════════════ -->
+<div class="auth-overlay" id="apps-modal" style="display: none;">
+    <div class="auth-modal" style="max-width: 800px; width: 90%;">
+        <button class="auth-close" id="apps-close" aria-label="Close modal">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div class="auth-header" style="text-align: left; margin-bottom: 2rem;">
+            <h2 class="auth-title">My Applications</h2>
+            <p class="auth-subtitle">Track your recent job and internship applications</p>
+        </div>
+        
+        <div id="apps-list-container" class="apps-list-container">
+            <!-- Applications will be loaded here -->
+            <div class="loading-apps" style="text-align: center; padding: 3rem;">
+                <div class="spinner-ring" style="position: static; display: inline-block; width: 40px; height: 40px; border-width: 2px;"></div>
+                <p style="margin-top: 1rem; color: var(--text-muted);">Loading your applications...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.apps-list-container {
+    max-height: 450px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+.apps-list-container::-webkit-scrollbar {
+    width: 6px;
+}
+.apps-list-container::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 10px;
+}
+.app-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    margin-bottom: 12px;
+    transition: var(--transition-fast);
+}
+.app-item:hover {
+    border-color: var(--accent-1);
+    transform: translateX(4px);
+}
+.app-info h4 {
+    margin: 0 0 4px 0;
+    font-size: 1rem;
+}
+.app-info p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+.app-status {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+.status-badge {
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+.status-applied {
+    background: rgba(52, 211, 153, 0.1);
+    color: var(--accent-green);
+}
+.app-date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+.empty-apps-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-muted);
+}
+.empty-apps-icon {
+    width: 64px;
+    height: 64px;
+    background: var(--bg-card);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    color: var(--border-color);
+}
+</style>
+
+<!-- Auth Modal remains disabled as we use /login page -->
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span class="logo-text">Resume<span class="logo-accent">AI</span></span>
+                <p>AI-powered resume analysis and job matching.</p>
+            </div>
+            <div class="footer-links">
+
+
+
+
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Ambient Music Audio Element -->
+<audio id="ambient-music" loop preload="auto">
+    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3" type="audio/mpeg">
+</audio>
+
+<script src="{{ url_for('static', filename='js/app.js') }}?v=1.0.3"></script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+John Doe
+Software Engineer
+Skills: Python, JavaScript, HTML, CSS, React
+Experience: 5 years of software development.
+Education: BS in Computer Science.

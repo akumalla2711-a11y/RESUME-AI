@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — ResumeAI</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
+    <style>
+        body {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden; /* Hide floating orbs overflow */
+        }
+
+        /* Nav Header Override for Login */
+        .login-nav {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            padding: var(--space-md) var(--space-xl);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        /* Background Orbs to match hero */
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+        }
+
+        .login-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: var(--space-2xl);
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: fadeInUp 0.5s var(--ease-out) forwards;
+            z-index: 10;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: var(--space-xl);
+        }
+
+        .login-header .logo-text {
+            font-size: 2rem;
+            margin-bottom: var(--space-xs);
+            display: inline-block;
+        }
+        
+        .login-header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Tabs */
+        .auth-method-tabs {
+            display: flex;
+            background: var(--bg-card-hover);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 4px;
+            gap: 4px;
+            margin-bottom: var(--space-xl);
+        }
+
+        .method-tab {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .method-tab.active {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        /* Panels */
+        .auth-panel {
+            display: none;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+        .auth-panel.active {
+            display: flex;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        /* Standard Input */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .input-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-left: 4px;
+        }
+
+        .input-group input {
+            background: var(--bg-body);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 14px 16px;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            transition: var(--transition-fast);
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent-1);
+            background: var(--bg-card);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin: var(--space-sm) 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .divider:not(:empty)::before { margin-right: 10px; }
+        .divider:not(:empty)::after { margin-left: 10px; }
+
+        .btn-submit {
+            width: 100%;
+            justify-content: center;
+            margin-top: var(--space-sm);
+        }
+
+        /* Status */
+        .status-text {
+            font-size: 0.85rem;
+            text-align: center;
+            min-height: 20px;
+            margin-top: var(--space-md);
+        }
+        .status-error { color: var(--accent-red); }
+        .status-success { color: var(--accent-green); }
+
+        /* General Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Navigation Bar just for Login page -->
+    <nav class="login-nav">
+        <a href="/" class="nav-logo" style="text-decoration: none;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;"><polyline points="15 18 9 12 15 6"/></svg>
+            <span class="logo-text">Resume<span class="logo-accent">AI</span></span>
+        </a>
+        
+        <!-- Re-using Theme Toggle Logic from actual site -->
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark/light theme" title="Toggle theme">
+            <svg class="theme-icon theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <svg class="theme-icon theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+    </nav>
+
+    <!-- Floating Background Orbs re-used from style.css -->
+    <div class="hero-bg">
+        <div class="hero-orb hero-orb-1" style="animation-duration: 25s;"></div>
+        <div class="hero-orb hero-orb-2" style="animation-duration: 22s;"></div>
+        <div class="hero-orb hero-orb-3" style="animation-duration: 28s;"></div>
+    </div>
+
+    <div class="login-card">
+        <div class="login-header">
+            <span class="logo-text">Resume<span class="logo-accent">AI</span></span>
+            <p>Sign in to unlock personalized job recommendations.</p>
+        </div>
+
+        <!-- EMAIL LOGIN PANEL -->
+        <div class="auth-panel active" id="tab-email">
+            <!-- Google Auth Native Button Container -->
+            <div id="g_id_onload"
+                 data-client_id="{{ google_client_id }}"
+                 data-context="signin"
+                 data-ux_mode="popup"
+                 data-callback="handleGoogleCredentialResponse"
+                 data-auto_prompt="false">
+            </div>
+            
+            <div class="g_id_signin"
+                 data-type="standard"
+                 data-shape="rectangular"
+                 data-theme="outline"
+                 data-text="continue_with"
+                 data-size="large"
+                 data-logo_alignment="left"
+                 style="display: flex; justify-content: center; width: 100%;">
+            </div>
+
+            <div class="divider">or continue with email</div>
+
+            <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" id="email-input" placeholder="you@example.com">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="password-input" placeholder="••••••••">
+            </div>
+            <button class="btn btn-primary btn-lg btn-submit" onclick="loginWithEmail()">
+                Sign In
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+        </div>
+
+
+
+        <div class="status-text status-error" id="auth-status"></div>
+    </div>
+
+    <!-- Theme Selection Logic (Identical to app.js) -->
+    <script>
+        const themeBtn = document.getElementById('theme-toggle');
+        const htmlObj = document.documentElement;
+
+        // Initialize Theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') {
+            htmlObj.setAttribute('data-theme', 'light');
+        } else {
+            // Default dark
+            htmlObj.removeAttribute('data-theme');
+        }
+
+        themeBtn.addEventListener('click', () => {
+            const currentTheme = htmlObj.getAttribute('data-theme');
+            if (currentTheme === 'light') {
+                htmlObj.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                htmlObj.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+    </script>
+
+    <!-- Authentication Logic -->
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.method-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            
+            document.getElementById('auth-status').innerText = "";
+        }
+
+        function setStatus(msg, isError) {
+            const el = document.getElementById('auth-status');
+            el.innerText = msg;
+            el.className = isError ? "status-text status-error" : "status-text status-success";
+        }
+
+        // --- EMAIL LOGIN ---
+        async function loginWithEmail() {
+            const email = document.getElementById('email-input').value;
+            const password = document.getElementById('password-input').value;
+            
+            try {
+                const res = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if(!res.ok) throw new Error(data.error || "Login failed");
+                window.location.href = '/';
+            } catch(e) {
+                setStatus(e.message, true);
+            }
+        }
+
+        // --- GOOGLE OAUTH ---
+        async function handleGoogleCredentialResponse(response) {
+            try {
+                const res = await fetch('/auth/google/verify', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ credential: response.credential })
+                });
+                const data = await res.json();
+                if(!res.ok) throw new Error(data.error || "Google login failed");
+                window.location.href = '/';
+            } catch(e) {
+                setStatus(e.message, true);
+            }
+        }
+
+        // --- MOBILE OTP ---
+        async function requestOTP() {
+            const phone = document.getElementById('phone-input').value;
+            if(!phone) return setStatus("Please enter a phone number", true);
+            
+            setStatus("Sending code...", false);
+            try {
+                const res = await fetch('/auth/otp/send', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ phone })
+                });
+                const data = await res.json();
+                if(!res.ok) throw new Error(data.error || "Failed to send OTP");
+                
+                setStatus("", false);
+                document.getElementById('mobile-step-1').style.display = 'none';
+                document.getElementById('mobile-step-2').style.display = 'flex';
+            } catch(e) {
+                setStatus(e.message, true);
+            }
+        }
+
+        async function verifyOTP() {
+            const phone = document.getElementById('phone-input').value;
+            const otp = document.getElementById('otp-input').value;
+            if(!otp) return setStatus("Please enter the code", true);
+            
+            try {
+                const res = await fetch('/auth/otp/verify', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ phone, otp })
+                });
+                const data = await res.json();
+                if(!res.ok) throw new Error(data.error || "Invalid OTP");
+                window.location.href = '/';
+            } catch(e) {
+                setStatus(e.message, true);
+            }
+        }
+        
+        function resetMobileFlow() {
+            document.getElementById('otp-input').value = "";
+            document.getElementById('mobile-step-2').style.display = 'none';
+            document.getElementById('mobile-step-1').style.display = 'flex';
+            setStatus("", false);
+        }
+    </script>
+</body>
+</html>

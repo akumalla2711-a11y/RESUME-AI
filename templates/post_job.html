@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'Edit Job' if posting else 'Post a Job' }} — ResumeAI Employer</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        :root { --bg-primary: #0a0a0f; --bg-secondary: #12121a; --bg-card: rgba(18,18,26,0.85); --accent: #6366f1; --accent-hover: #4f46e5; --text-primary: #f1f5f9; --text-secondary: #94a3b8; --border-color: rgba(255,255,255,0.08); --success: #10b981; --danger: #ef4444; }
+        body { background: var(--bg-primary); color: var(--text-primary); font-family: 'Inter', sans-serif; min-height: 100vh; }
+        .page-nav { display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); }
+        .logo { font-size: 20px; font-weight: 700; }
+        .logo-accent { color: var(--accent); }
+        .container { max-width: 720px; margin: 0 auto; padding: 40px 32px; }
+        h1 { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+        .subtitle { color: var(--text-secondary); margin-bottom: 32px; }
+        .form-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 32px; }
+        .form-group { margin-bottom: 24px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border-color); border-radius: 8px;
+            color: var(--text-primary); font-size: 14px; font-family: 'Inter', sans-serif;
+            box-sizing: border-box;
+        }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none; border-color: var(--accent);
+        }
+        .form-group textarea { min-height: 120px; resize: vertical; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; text-decoration: none; transition: all 0.15s; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-secondary { background: rgba(255,255,255,0.06); color: var(--text-primary); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+        .btn-danger { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .form-actions { display: flex; gap: 12px; margin-top: 32px; }
+        .toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px 20px; font-size: 14px; animation: slideIn 0.3s; }
+        .toast.error { border-color: var(--danger); color: var(--danger); }
+        .toast.success { border-color: var(--success); color: var(--success); }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } }
+        .help-text { font-size: 12px; color: var(--text-secondary); margin-top: 6px; }
+    </style>
+</head>
+<body>
+
+<nav class="page-nav">
+    <div class="logo">Resume<span class="logo-accent">AI</span> <span style="font-size:12px;color:var(--text-secondary)"> Employer</span></div>
+    <a href="/employer/dashboard" class="btn btn-secondary" style="font-size:13px">← Back to Dashboard</a>
+</nav>
+
+<div class="container">
+    <h1>{{ 'Edit Job Posting' if posting else 'Post a New Job' }}</h1>
+    <p class="subtitle">{{ employer.company_name }}</p>
+
+    <div class="form-card">
+        <div class="form-group">
+            <label>Job Title *</label>
+            <input type="text" id="title" placeholder="e.g. Senior Data Scientist" value="{{ posting.title if posting else '' }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Job Description *</label>
+            <textarea id="description" placeholder="Describe the role, responsibilities, requirements, and what makes this opportunity great...">{{ posting.description if posting else '' }}</textarea>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Location</label>
+                <input type="text" id="location" placeholder="e.g. Remote, New York NY" value="{{ posting.location if posting else '' }}">
+            </div>
+            <div class="form-group">
+                <label>Job Type</label>
+                <select id="job_type">
+                    <option value="full-time" {{ 'selected' if posting and posting.job_type == 'full-time' else '' }}>Full-time</option>
+                    <option value="part-time" {{ 'selected' if posting and posting.job_type == 'part-time' else '' }}>Part-time</option>
+                    <option value="contract" {{ 'selected' if posting and posting.job_type == 'contract' else '' }}>Contract</option>
+                    <option value="internship" {{ 'selected' if posting and posting.job_type == 'internship' else '' }}>Internship</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Experience Level</label>
+                <select id="experience_level">
+                    <option value="">Any</option>
+                    <option value="entry" {{ 'selected' if posting and posting.experience_level == 'entry' else '' }}>Entry / Junior</option>
+                    <option value="mid" {{ 'selected' if posting and posting.experience_level == 'mid' else '' }}>Mid-level</option>
+                    <option value="senior" {{ 'selected' if posting and posting.experience_level == 'senior' else '' }}>Senior</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Required Skills</label>
+                <input type="text" id="skills" placeholder="python, machine learning, sql (comma-separated)" value="{{ posting.skills_required|join(', ') if posting and posting.skills_required else '' }}">
+                <div class="help-text">Comma-separated list of skills</div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Min Salary (USD)</label>
+                <input type="number" id="salary_min" placeholder="80000" value="{{ posting.salary_min if posting else '' }}">
+            </div>
+            <div class="form-group">
+                <label>Max Salary (USD)</label>
+                <input type="number" id="salary_max" placeholder="120000" value="{{ posting.salary_max if posting else '' }}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Apply URL</label>
+            <input type="url" id="apply_url" placeholder="https://yourcompany.com/careers/apply?role=..." value="{{ posting.apply_url if posting else '' }}">
+            <div class="help-text">External link where candidates apply (Leave blank to track all applications through ResumeAI)</div>
+        </div>
+
+        {% if posting %}
+        <div class="form-group">
+            <label>Status</label>
+            <select id="status">
+                <option value="open" {{ 'selected' if posting.status == 'open' else '' }}>Open</option>
+                <option value="closed" {{ 'selected' if posting.status == 'closed' else '' }}>Closed</option>
+                <option value="draft" {{ 'selected' if posting.status == 'draft' else '' }}>Draft</option>
+            </select>
+        </div>
+        {% endif %}
+
+        <div class="form-actions">
+            <button class="btn btn-primary" onclick="submitJob()">
+                {{ 'Save Changes' if posting else 'Post Job' }}
+            </button>
+            <a href="/employer/dashboard" class="btn btn-secondary">Cancel</a>
+        </div>
+    </div>
+</div>
+
+<script>
+const postingId = {{ posting.id if posting else 'null' }};
+
+async function submitJob() {
+    const title = document.getElementById('title').value.trim();
+    const description = document.getElementById('description').value.trim();
+    const location = document.getElementById('location').value.trim();
+    const job_type = document.getElementById('job_type').value;
+    const experience_level = document.getElementById('experience_level').value;
+    const skills_raw = document.getElementById('skills').value.trim();
+    const salary_min = document.getElementById('salary_min').value;
+    const salary_max = document.getElementById('salary_max').value;
+    const apply_url = document.getElementById('apply_url').value.trim();
+    const status = document.getElementById('status') ? document.getElementById('status').value : 'open';
+
+    if (!title || !description) {
+        showToast('Title and description are required.', 'error');
+        return;
+    }
+
+    const skills = skills_raw ? skills_raw.split(',').map(s => s.trim()).filter(Boolean) : [];
+    const body = { title, description, location, job_type, experience_level, skills, apply_url };
+    if (postingId) { body.salary_min = salary_min || null; body.salary_max = salary_max || null; body.status = status; }
+    else { if (salary_min) body.salary_min = parseInt(salary_min); if (salary_max) body.salary_max = parseInt(salary_max); }
+
+    const url = postingId ? `/employer/jobs/${postingId}` : '/employer/jobs';
+    const method = postingId ? 'POST' : 'POST';
+
+    try {
+        const res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast(postingId ? 'Job updated!' : 'Job posted!', 'success');
+            setTimeout(() => window.location.href = '/employer/dashboard', 1200);
+        } else {
+            showToast(data.error || 'Failed to save job', 'error');
+        }
+    } catch (e) {
+        showToast('Network error', 'error');
+    }
+}
+
+function showToast(message, type) {
+    const div = document.createElement('div');
+    div.className = `toast ${type}`;
+    div.textContent = message;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 3000);
+}
+</script>
+</body>
+</html>

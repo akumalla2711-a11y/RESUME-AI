@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Applicants — {{ posting.title }} — ResumeAI</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        :root { --bg-primary: #0a0a0f; --bg-secondary: #12121a; --bg-card: rgba(18,18,26,0.85); --accent: #6366f1; --accent-hover: #4f46e5; --text-primary: #f1f5f9; --text-secondary: #94a3b8; --border-color: rgba(255,255,255,0.08); --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --blue: #3b82f6; --yellow: #eab308; --green: #22c55e; --gray: #6b7280; --pink: #ec4899; }
+        body { background: var(--bg-primary); color: var(--text-primary); font-family: 'Inter', sans-serif; min-height: 100vh; }
+        .page-nav { display: flex; justify-content: space-between; align-items: center; padding: 14px 32px; background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); }
+        .logo { font-size: 18px; font-weight: 700; }
+        .logo-accent { color: var(--accent); }
+        .container { max-width: 1400px; margin: 0 auto; padding: 28px 32px; }
+        .page-header { margin-bottom: 28px; }
+        .page-header h1 { font-size: 22px; font-weight: 700; }
+        .page-header .job-meta { color: var(--text-secondary); font-size: 14px; margin-top: 4px; }
+        .pipeline-board {
+            display: flex; gap: 16px; align-items: flex-start;
+            overflow-x: auto; padding-bottom: 20px;
+        }
+        .pipeline-column {
+            flex: 0 0 240px; min-width: 240px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 14px;
+        }
+        .col-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 14px; padding-bottom: 10px;
+            border-bottom: 2px solid var(--stage-color, var(--border-color));
+        }
+        .col-header .stage-name { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+        .col-header .count { background: rgba(255,255,255,0.1); border-radius: 10px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+        .applicant-card {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 10px; padding: 12px; margin-bottom: 10px;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .applicant-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+        .applicant-card .name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+        .applicant-card .email { font-size: 12px; color: var(--text-secondary); }
+        .applicant-card .applied-date { font-size: 11px; color: var(--text-secondary); margin-top: 6px; }
+        .applicant-card .quality-badge {
+            display: inline-block; margin-top: 6px; padding: 2px 8px;
+            border-radius: 10px; font-size: 11px; font-weight: 600;
+        }
+        .unassigned-card {
+            border: 1px dashed rgba(255,255,255,0.15); background: transparent;
+        }
+        .unassigned-card .name { color: var(--text-secondary); }
+        .empty-col { text-align: center; padding: 24px 10px; color: var(--text-secondary); font-size: 12px; }
+        .stage-form {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 10px; padding: 12px; margin-top: 8px;
+        }
+        .stage-form select { width: 100%; padding: 6px 8px; background: rgba(255,255,255,0.06); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 12px; margin-bottom: 6px; }
+        .stage-form button { width: 100%; padding: 6px; background: var(--accent); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .btn-back { font-size: 13px; padding: 6px 14px; }
+    </style>
+</head>
+<body>
+
+<nav class="page-nav">
+    <div class="logo">Resume<span class="logo-accent">AI</span> <span style="font-size:12px;color:var(--text-secondary)"> Employer</span></div>
+    <div style="display:flex;gap:10px;">
+        <a href="/employer/dashboard" class="btn-back" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;background:rgba(255,255,255,0.06);color:var(--text-primary);border:1px solid var(--border-color);">← Dashboard</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="page-header">
+        <h1>{{ posting.title }}</h1>
+        <div class="job-meta">
+            {{ posting.location or 'Location not specified' }} &nbsp;·&nbsp;
+            {{ posting.job_type or 'full-time' }} &nbsp;·&nbsp;
+            Posted {{ posting.posted_at[:10] if posting.posted_at else 'recently' }}
+        </div>
+    </div>
+
+    <div class="pipeline-board">
+        {% for stage in stages %}
+        <div class="pipeline-column" style="--stage-color: {{ stage.color }}">
+            <div class="col-header">
+                <span class="stage-name" style="color: {{ stage.color }}">{{ stage.name }}</span>
+                <span class="count">{{ pipeline[stage.id]|length }}</span>
+            </div>
+
+            {% for app in pipeline[stage.id] %}
+            <div class="applicant-card" onclick="viewCandidate({{ app.id }})">
+                <div class="name">{{ app.candidate_name }}</div>
+                <div class="email">{{ app.candidate_email }}</div>
+                {% if analyses[app.user_id] %}
+                <div class="quality-badge" style="background: rgba(99,102,241,0.15); color: var(--accent)">
+                    Resume score: {{ analyses[app.user_id].quality_score }}%
+                </div>
+                {% endif %}
+                <div class="applied-date">Applied {{ app.applied_at[:10] if app.applied_at else '' }}</div>
+            </div>
+            {% endfor %}
+
+            {% if pipeline[stage.id]|length == 0 %}
+            <div class="empty-col">No applicants</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+function viewCandidate(appId) {
+    window.location.href = `/employer/application/${appId}/detail`;
+}
+</script>
+</body>
+</html>

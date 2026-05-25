@@ -1,0 +1,97 @@
+version: 1
+categories:
+  - label: ACCOUNTANT
+    aliases: ["Accountant", "Accounting"]
+    required_skills: ["accounting", "financial analysis", "excel", "communication", "problem solving"]
+
+  - label: ADVOCATE
+    aliases: ["Advocate", "Law", "Legal"]
+    required_skills: ["communication", "problem solving", "project management", "leadership"]
+
+  - label: AGRICULTURE
+    aliases: ["Agriculture", "Agri", "Agritech"]
+    required_skills: ["data analysis", "project management", "communication", "problem solving", "excel"]
+
+  - label: APPAREL
+    aliases: ["Apparel", "Fashion", "Merchandising"]
+    required_skills: ["graphic design", "project management", "communication", "problem solving", "sales"]
+
+  - label: ARTS
+    aliases: ["Arts", "Creative Arts"]
+    required_skills: ["ui/ux", "graphic design", "communication", "problem solving"]
+
+  - label: AUTOMOBILE
+    aliases: ["Automobile", "Automotive"]
+    required_skills: ["mechanical engineering", "project management", "problem solving", "communication", "data analysis"]
+
+  - label: AVIATION
+    aliases: ["Aviation", "Aeronautics"]
+    required_skills: ["project management", "communication", "problem solving", "data analysis"]
+
+  - label: BANKING
+    aliases: ["Banking", "Bank Operations"]
+    required_skills: ["financial analysis", "accounting", "excel", "communication", "project management"]
+
+  - label: BPO
+    aliases: ["BPO", "Business Process Outsourcing", "Customer Support"]
+    required_skills: ["communication", "project management", "problem solving", "excel", "data analysis"]
+
+  - label: BUSINESS-DEVELOPMENT
+    aliases: ["Business Development", "BD", "Growth"]
+    required_skills: ["sales", "communication", "leadership", "project management", "data analysis"]
+
+  - label: CHEF
+    aliases: ["Chef", "Culinary"]
+    required_skills: ["communication", "project management", "leadership", "problem solving"]
+
+  - label: CONSTRUCTION
+    aliases: ["Construction", "Site Engineering"]
+    required_skills: ["civil engineering", "project management", "leadership", "communication", "problem solving"]
+
+  - label: CONSULTANT
+    aliases: ["Consultant", "Consulting"]
+    required_skills: ["communication", "project management", "data analysis", "problem solving", "leadership"]
+
+  - label: DESIGNER
+    aliases: ["Designer", "Product Designer", "UI Designer"]
+    required_skills: ["ui/ux", "graphic design", "communication", "problem solving", "frontend"]
+
+  - label: DIGITAL-MEDIA
+    aliases: ["Digital Media", "Media", "Content"]
+    required_skills: ["digital marketing", "communication", "data analysis", "graphic design", "excel"]
+
+  - label: ENGINEERING
+    aliases: ["Engineering", "Engineer"]
+    required_skills: ["mechanical engineering", "electrical engineering", "civil engineering", "project management", "problem solving"]
+
+  - label: FINANCE
+    aliases: ["Finance", "Financial Services"]
+    required_skills: ["financial analysis", "accounting", "excel", "data analysis", "communication"]
+
+  - label: FITNESS
+    aliases: ["Fitness", "Wellness"]
+    required_skills: ["healthcare", "communication", "leadership", "project management"]
+
+  - label: HEALTHCARE
+    aliases: ["Healthcare", "Clinical", "Medical"]
+    required_skills: ["healthcare", "nursing", "communication", "problem solving", "data analysis"]
+
+  - label: HR
+    aliases: ["HR", "Human Resources"]
+    required_skills: ["recruitment", "employee relations", "hr compliance", "communication", "leadership"]
+
+  - label: INFORMATION-TECHNOLOGY
+    aliases: ["Information Technology", "IT", "Tech"]
+    required_skills: ["java", "sql", "git", "linux", "backend", "api", "database"]
+
+  - label: PUBLIC-RELATIONS
+    aliases: ["Public Relations", "PR", "Corporate Communications"]
+    required_skills: ["communication", "digital marketing", "leadership", "project management", "problem solving"]
+
+  - label: SALES
+    aliases: ["Sales", "Business Sales"]
+    required_skills: ["sales", "communication", "leadership", "project management"]
+
+  - label: TEACHER
+    aliases: ["Teacher", "Education", "Instructor"]
+    required_skills: ["communication", "leadership", "training", "data analysis", "problem solving"]

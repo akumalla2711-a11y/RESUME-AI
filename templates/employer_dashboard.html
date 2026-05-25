@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employer Dashboard — ResumeAI</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: rgba(18, 18, 26, 0.85);
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: rgba(255,255,255,0.08);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        body { background: var(--bg-primary); color: var(--text-primary); font-family: 'Inter', sans-serif; }
+        .emp-nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 32px; background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .emp-nav .logo { font-size: 20px; font-weight: 700; }
+        .emp-nav .logo-accent { color: var(--accent); }
+        .emp-nav .nav-actions { display: flex; gap: 12px; align-items: center; }
+        .emp-nav .company-badge {
+            font-size: 13px; color: var(--text-secondary);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .emp-nav .company-badge .verified-icon { color: var(--success); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 32px; }
+        .page-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 32px;
+        }
+        .page-header h1 { font-size: 28px; font-weight: 700; }
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px; margin-bottom: 32px;
+        }
+        .stat-card {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 20px;
+        }
+        .stat-card .stat-label { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em; }
+        .stat-card .stat-value { font-size: 32px; font-weight: 700; margin-top: 4px; }
+        .section-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 16px;
+        }
+        .section-header h2 { font-size: 18px; font-weight: 600; }
+        .jobs-table {
+            width: 100%; border-collapse: collapse;
+            background: var(--bg-card); border-radius: 12px;
+            overflow: hidden; border: 1px solid var(--border-color);
+        }
+        .jobs-table th {
+            text-align: left; padding: 14px 16px;
+            font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+            color: var(--text-secondary); background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .jobs-table td {
+            padding: 14px 16px; border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+        .jobs-table tr:last-child td { border-bottom: none; }
+        .jobs-table tr:hover td { background: rgba(255,255,255,0.02); }
+        .badge {
+            display: inline-block; padding: 4px 10px; border-radius: 20px;
+            font-size: 11px; font-weight: 600; text-transform: uppercase;
+        }
+        .badge-open { background: rgba(16,185,129,0.15); color: var(--success); }
+        .badge-closed { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .badge-draft { background: rgba(245,158,11,0.15); color: var(--warning); }
+        .btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border-radius: 8px; font-size: 13px;
+            font-weight: 600; cursor: pointer; border: none; text-decoration: none;
+            transition: all 0.15s;
+        }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-secondary { background: rgba(255,255,255,0.06); color: var(--text-primary); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
+        .btn-danger { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .btn-danger:hover { background: rgba(239,68,68,0.25); }
+        .empty-state {
+            text-align: center; padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+        .empty-state svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.4; }
+        .empty-state h3 { font-size: 18px; margin-bottom: 8px; color: var(--text-primary); }
+        .status-dot {
+            display: inline-block; width: 8px; height: 8px;
+            border-radius: 50%; margin-right: 6px;
+        }
+        .toast {
+            position: fixed; bottom: 24px; right: 24px;
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 10px; padding: 14px 20px;
+            font-size: 14px; z-index: 9999;
+            animation: slideIn 0.3s ease;
+        }
+        .toast.success { border-color: var(--success); color: var(--success); }
+        .toast.error { border-color: var(--danger); color: var(--danger); }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } }
+    </style>
+</head>
+<body>
+
+<nav class="emp-nav">
+    <div class="logo">Resume<span class="logo-accent">AI</span> <span style="font-size:12px;color:var(--text-secondary)"> Employer</span></div>
+    <div class="nav-actions">
+        <div class="company-badge">
+            {% if employer.logo_url %}
+            <img src="{{ employer.logo_url }}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;">
+            {% endif %}
+            {{ employer.company_name }}
+            {% if employer.verified %}
+            <svg class="verified-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            {% endif %}
+        </div>
+        <a href="/" class="btn btn-secondary btn-sm">Candidate View</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="page-header">
+        <h1>Dashboard</h1>
+        <a href="/employer/jobs/new" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Post a Job
+        </a>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Total Postings</div>
+            <div class="stat-value">{{ postings|length }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Open Positions</div>
+            <div class="stat-value">{{ postings|selectattr('status','equalto','open')|list|length }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Applicants</div>
+            <div class="stat-value">{{ postings|sum(attribute='application_count') }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">This Month</div>
+            <div class="stat-value">—</div>
+        </div>
+    </div>
+
+    <div class="section-header">
+        <h2>Your Job Postings</h2>
+    </div>
+
+    {% if postings %}
+    <table class="jobs-table">
+        <thead>
+            <tr>
+                <th>Job Title</th>
+                <th>Location</th>
+                <th>Type</th>
+                <th>Salary Range</th>
+                <th>Status</th>
+                <th>Applicants</th>
+                <th>Posted</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for p in postings %}
+            <tr>
+                <td>
+                    <strong>{{ p.title }}</strong>
+                </td>
+                <td style="color: var(--text-secondary)">{{ p.location or '—' }}</td>
+                <td style="color: var(--text-secondary); text-transform: capitalize">{{ p.job_type or 'full-time' }}</td>
+                <td>
+                    {% if p.salary_min and p.salary_max %}
+                        ${{ "{:,.0f}".format(p.salary_min) }} — ${{ "{:,.0f}".format(p.salary_max) }}
+                    {% elif p.salary_min %}
+                        From ${{ "{:,.0f}".format(p.salary_min) }}
+                    {% else %}
+                        <span style="color: var(--text-secondary)">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="badge badge-{{ p.status }}">{{ p.status }}</span>
+                </td>
+                <td><strong>{{ p.application_count }}</strong></td>
+                <td style="color: var(--text-secondary); font-size: 12px">
+                    {{ p.posted_at[:10] if p.posted_at else '—' }}
+                </td>
+                <td>
+                    <div style="display:flex; gap:6px;">
+                        {% if p.application_count > 0 %}
+                        <a href="/employer/jobs/{{ p.id }}/applicants" class="btn btn-secondary btn-sm">Applicants</a>
+                        {% endif %}
+                        <a href="/employer/jobs/{{ p.id }}/edit" class="btn btn-secondary btn-sm">Edit</a>
+                        {% if p.status == 'open' %}
+                        <button class="btn btn-danger btn-sm" onclick="closeJob({{ p.id }})">Close</button>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.175-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 1h8a2 2 0 012 2v8a5 5 0 01-5 5H9a5 5 0 01-5-5v-3a2 2 0 012-2h3.5"/></svg>
+        <h3>No job postings yet</h3>
+        <p style="margin-bottom:20px">Post your first job and start receiving applications from qualified candidates.</p>
+        <a href="/employer/jobs/new" class="btn btn-primary">Post Your First Job</a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+async function closeJob(jobId) {
+    if (!confirm("Close this job posting?")) return;
+    try {
+        const res = await fetch(`/employer/jobs/${jobId}/close`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            showToast('Job closed successfully', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(data.error || 'Failed to close job', 'error');
+        }
+    } catch (e) {
+        showToast('Network error', 'error');
+    }
+}
+
+function showToast(message, type) {
+    const div = document.createElement('div');
+    div.className = `toast ${type}`;
+    div.textContent = message;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 3000);
+}
+</script>
+</body>
+</html>

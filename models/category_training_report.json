@@ -1,0 +1,239 @@
+{
+  "trained_at_utc": "2026-04-12T22:57:27.480431+00:00",
+  "rows_total": 2483,
+  "rows_train": 1986,
+  "rows_test": 497,
+  "num_categories": 24,
+  "categories": [
+    "ACCOUNTANT",
+    "ADVOCATE",
+    "AGRICULTURE",
+    "APPAREL",
+    "ARTS",
+    "AUTOMOBILE",
+    "AVIATION",
+    "BANKING",
+    "BPO",
+    "BUSINESS-DEVELOPMENT",
+    "CHEF",
+    "CONSTRUCTION",
+    "CONSULTANT",
+    "DESIGNER",
+    "DIGITAL-MEDIA",
+    "ENGINEERING",
+    "FINANCE",
+    "FITNESS",
+    "HEALTHCARE",
+    "HR",
+    "INFORMATION-TECHNOLOGY",
+    "PUBLIC-RELATIONS",
+    "SALES",
+    "TEACHER"
+  ],
+  "accuracy": 0.672,
+  "macro_f1": 0.6447,
+  "per_class_recall": {
+    "ACCOUNTANT": 0.8333,
+    "ADVOCATE": 0.5,
+    "AGRICULTURE": 0.5385,
+    "APPAREL": 0.2632,
+    "ARTS": 0.4286,
+    "AUTOMOBILE": 0.5714,
+    "AVIATION": 0.7083,
+    "BANKING": 0.6522,
+    "BPO": 0.25,
+    "BUSINESS-DEVELOPMENT": 0.875,
+    "CHEF": 0.7083,
+    "CONSTRUCTION": 0.7727,
+    "CONSULTANT": 0.2174,
+    "DESIGNER": 0.7619,
+    "DIGITAL-MEDIA": 0.5263,
+    "ENGINEERING": 0.75,
+    "FINANCE": 0.7083,
+    "FITNESS": 0.6957,
+    "HEALTHCARE": 0.6522,
+    "HR": 0.9091,
+    "INFORMATION-TECHNOLOGY": 1.0,
+    "PUBLIC-RELATIONS": 0.7727,
+    "SALES": 0.6957,
+    "TEACHER": 0.75
+  },
+  "minority_classes": [
+    "AGRICULTURE",
+    "APPAREL",
+    "ARTS",
+    "AUTOMOBILE",
+    "BPO",
+    "DIGITAL-MEDIA",
+    "TEACHER"
+  ],
+  "minority_recall_min": 0.25,
+  "quality_gates": {
+    "macro_f1_floor": 0.4,
+    "minority_recall_floor": 0.25,
+    "macro_f1_passed": true,
+    "minority_recall_passed": true
+  },
+  "confusion_matrix_summary": [
+    {
+      "label": "CONSULTANT",
+      "support": 23,
+      "correct": 5,
+      "mistakes": 18,
+      "most_confused_with": "BUSINESS-DEVELOPMENT",
+      "confused_count": 5
+    },
+    {
+      "label": "APPAREL",
+      "support": 19,
+      "correct": 5,
+      "mistakes": 14,
+      "most_confused_with": "SALES",
+      "confused_count": 5
+    },
+    {
+      "label": "ADVOCATE",
+      "support": 24,
+      "correct": 12,
+      "mistakes": 12,
+      "most_confused_with": "HEALTHCARE",
+      "confused_count": 5
+    },
+    {
+      "label": "ARTS",
+      "support": 21,
+      "correct": 9,
+      "mistakes": 12,
+      "most_confused_with": "TEACHER",
+      "confused_count": 6
+    },
+    {
+      "label": "DIGITAL-MEDIA",
+      "support": 19,
+      "correct": 10,
+      "mistakes": 9,
+      "most_confused_with": "BUSINESS-DEVELOPMENT",
+      "confused_count": 2
+    },
+    {
+      "label": "BANKING",
+      "support": 23,
+      "correct": 15,
+      "mistakes": 8,
+      "most_confused_with": "ACCOUNTANT",
+      "confused_count": 2
+    },
+    {
+      "label": "HEALTHCARE",
+      "support": 23,
+      "correct": 15,
+      "mistakes": 8,
+      "most_confused_with": "AGRICULTURE",
+      "confused_count": 1
+    },
+    {
+      "label": "AVIATION",
+      "support": 24,
+      "correct": 17,
+      "mistakes": 7,
+      "most_confused_with": "ENGINEERING",
+      "confused_count": 3
+    },
+    {
+      "label": "CHEF",
+      "support": 24,
+      "correct": 17,
+      "mistakes": 7,
+      "most_confused_with": "SALES",
+      "confused_count": 2
+    },
+    {
+      "label": "FINANCE",
+      "support": 24,
+      "correct": 17,
+      "mistakes": 7,
+      "most_confused_with": "ACCOUNTANT",
+      "confused_count": 5
+    },
+    {
+      "label": "FITNESS",
+      "support": 23,
+      "correct": 16,
+      "mistakes": 7,
+      "most_confused_with": "SALES",
+      "confused_count": 2
+    },
+    {
+      "label": "SALES",
+      "support": 23,
+      "correct": 16,
+      "mistakes": 7,
+      "most_confused_with": "BUSINESS-DEVELOPMENT",
+      "confused_count": 3
+    },
+    {
+      "label": "AGRICULTURE",
+      "support": 13,
+      "correct": 7,
+      "mistakes": 6,
+      "most_confused_with": "ADVOCATE",
+      "confused_count": 1
+    },
+    {
+      "label": "ENGINEERING",
+      "support": 24,
+      "correct": 18,
+      "mistakes": 6,
+      "most_confused_with": "INFORMATION-TECHNOLOGY",
+      "confused_count": 3
+    },
+    {
+      "label": "CONSTRUCTION",
+      "support": 22,
+      "correct": 17,
+      "mistakes": 5,
+      "most_confused_with": "ADVOCATE",
+      "confused_count": 1
+    },
+    {
+      "label": "DESIGNER",
+      "support": 21,
+      "correct": 16,
+      "mistakes": 5,
+      "most_confused_with": "APPAREL",
+      "confused_count": 1
+    },
+    {
+      "label": "PUBLIC-RELATIONS",
+      "support": 22,
+      "correct": 17,
+      "mistakes": 5,
+      "most_confused_with": "ADVOCATE",
+      "confused_count": 1
+    },
+    {
+      "label": "TEACHER",
+      "support": 20,
+      "correct": 15,
+      "mistakes": 5,
+      "most_confused_with": "ADVOCATE",
+      "confused_count": 1
+    },
+    {
+      "label": "ACCOUNTANT",
+      "support": 24,
+      "correct": 20,
+      "mistakes": 4,
+      "most_confused_with": "SALES",
+      "confused_count": 2
+    },
+    {
+      "label": "AUTOMOBILE",
+      "support": 7,
+      "correct": 4,
+      "mistakes": 3,
+      "most_confused_with": "ADVOCATE",
+      "confused_count": 1
+    }
+  ]
+}
