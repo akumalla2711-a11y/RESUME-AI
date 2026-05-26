@@ -11,6 +11,28 @@ except ImportError:
 
 BASE_DIR = Path(__file__).resolve().parent
 
+_INSECURE_SECRET_VALUES = {
+    "",
+    "change-this-in-production",
+    "resume-analyzer-dev-key-2024",
+    "your-secret-key-here",
+}
+
+
+def _validate_production_secret(secret_key: str):
+    """
+    Ensure production uses a strong, explicitly configured secret key.
+    """
+    candidate = (secret_key or "").strip()
+    if candidate in _INSECURE_SECRET_VALUES:
+        raise RuntimeError(
+            "Invalid production SECRET_KEY. Set a strong value via environment variables."
+        )
+    if len(candidate) < 32:
+        raise RuntimeError(
+            "Invalid production SECRET_KEY. Use at least 32 characters."
+        )
+
 
 class Config:
     """Base configuration."""
@@ -78,7 +100,7 @@ class DevelopmentConfig(Config):
 
 class ProductionConfig(Config):
     DEBUG = False
-    SECRET_KEY = os.environ.get("SECRET_KEY", "change-this-in-production")
+    SECRET_KEY = os.environ.get("SECRET_KEY", "")
 
 
 config_map = {
@@ -88,5 +110,8 @@ config_map = {
 
 
 def get_config():
-    env = os.environ.get("FLASK_ENV", "development")
-    return config_map.get(env, DevelopmentConfig)()
+    env = os.environ.get("FLASK_ENV", "development").strip().lower()
+    cfg = config_map.get(env, DevelopmentConfig)()
+    if env == "production":
+        _validate_production_secret(cfg.SECRET_KEY)
+    return cfg

@@ -8,7 +8,6 @@ Resume.csv
 recruiter_summaries.txt
 .env
 .env.*
-!.env.example
 .DS_Store
 Thumbs.db
 *.db
