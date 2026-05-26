@@ -13,6 +13,7 @@ from pathlib import Path
 from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 from flask_login import LoginManager, current_user, login_required
+from werkzeug.exceptions import RequestEntityTooLarge
 
 from auth import auth_bp
 from config import get_config
@@ -73,6 +74,11 @@ app.config["SECRET_KEY"] = cfg.SECRET_KEY
 app.config["SQLALCHEMY_DATABASE_URI"] = cfg.SQLALCHEMY_DATABASE_URI
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = cfg.SQLALCHEMY_TRACK_MODIFICATIONS
 CORS(app, origins=cfg.TRUSTED_DOMAINS)
+
+
+@app.errorhandler(RequestEntityTooLarge)
+def request_entity_too_large(_error):
+    return jsonify({"error": "File is too large. Maximum upload size is 10 MB."}), 413
 
 
 @app.after_request

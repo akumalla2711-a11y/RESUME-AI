@@ -67,6 +67,40 @@
 
     let selectedFile = null;
     let analysisInFlight = false;
+    const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
+    const MAX_UPLOAD_LABEL = "8 MB";
+
+    function sleep(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    function parseJsonSafe(text) {
+        if (!text) return {};
+        try {
+            return JSON.parse(text);
+        } catch {
+            return {};
+        }
+    }
+
+    async function postAnalyzeWithRetry(formData, retries = 1) {
+        let lastError = null;
+        for (let attempt = 0; attempt <= retries; attempt++) {
+            try {
+                return await fetch("/api/analyze", {
+                    method: "POST",
+                    body: formData,
+                    credentials: "same-origin",
+                    cache: "no-store",
+                });
+            } catch (err) {
+                lastError = err;
+                if (attempt === retries) break;
+                await sleep(1200);
+            }
+        }
+        throw lastError || new Error("Analysis request failed.");
+    }
 
     // â”€â”€ Theme Toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const themeToggle = document.getElementById("theme-toggle");
@@ -207,8 +241,8 @@
             showError("Unsupported file type. Please upload a PDF, DOCX, or TXT file.");
             return;
         }
-        if (file.size > 10 * 1024 * 1024) {
-            showError("File is too large. Maximum size is 10 MB.");
+        if (file.size > MAX_UPLOAD_BYTES) {
+            showError(`File is too large. Maximum size is ${MAX_UPLOAD_LABEL}.`);
             return;
         }
 
@@ -272,6 +306,12 @@
         }, 2000);
 
         try {
+            try {
+                await fetch("/api/health", { cache: "no-store" });
+            } catch (_) {
+                // Best effort warm-up ping for free-tier cold starts.
+            }
+
             const formData = new FormData();
             formData.append("resume", selectedFile);
             if (confirmedCategory) {
@@ -279,23 +319,26 @@
                 formData.append("remember_category", String(rememberCategory));
             }
 
-            const response = await fetch("/api/analyze", {
-                method: "POST",
-                body: formData,
-            });
+            const response = await postAnalyzeWithRetry(formData, 1);
 
             clearInterval(msgInterval);
-            const data = await response.json();
+            const rawResponse = await response.text();
+            const data = parseJsonSafe(rawResponse);
 
             if (!response.ok) {
                 if (response.status === 401 || data.auth_required) {
                     window.location.href = "/login";
                     return;
                 }
-                throw new Error(data.error || "Analysis failed. Please try again.");
+                if (response.status === 413) {
+                    throw new Error(`File is too large. Please upload a resume under ${MAX_UPLOAD_LABEL}.`);
+                }
+                throw new Error(
+                    data.error || `Analysis failed (HTTP ${response.status}). Please try again.`
+                );
             }
 
-            if (!data.success) {
+            if (!data || !data.success) {
                 throw new Error(data.error || "Unknown error occurred.");
             }
 
@@ -312,7 +355,14 @@
             loadingSection.style.display = "none";
             uploadSection.style.display = "block";
             document.body.classList.remove("results-mode");
-            showError(err.message);
+            const msg = (err && err.message) ? err.message : "Analysis failed. Please try again.";
+            if (msg === "Failed to fetch" || msg === "Load failed") {
+                showError(
+                    `Network issue while uploading. On mobile, open in Chrome/Safari (not in-app browser), use stable internet, and keep file under ${MAX_UPLOAD_LABEL}.`
+                );
+            } else {
+                showError(msg);
+            }
         } finally {
             analysisInFlight = false;
         }
