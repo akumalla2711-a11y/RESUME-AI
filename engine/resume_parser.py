@@ -160,7 +160,20 @@ def validate_resume_content(text: str) -> tuple[bool, str]:
             section_score += 1
             matched_sections.append(section_name)
 
-    # 6. Career and Resume terms (Contextual signals)
+    # 6. Contact and identity signals (strong resume markers)
+    has_email = bool(re.search(r"\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b", text_lower))
+    has_phone = bool(
+        re.search(
+            r"(?:\+?\d{1,3}[\s-]?)?(?:\(?\d{2,4}\)?[\s-]?)?\d{3,4}[\s-]?\d{3,4}",
+            text,
+        )
+    )
+    has_profile_links = any(link in text_lower for link in ["linkedin", "github", "portfolio"])
+    has_contact_signal = has_email or has_phone or has_profile_links
+
+    has_education_or_experience = ("education" in matched_sections) or ("experience" in matched_sections)
+
+    # 7. Career and Resume terms (Contextual signals)
     career_terms = [
         "resume", "curriculum vitae", "c.v.", "cv", "developer", "engineer", "designer", 
         "manager", "analyst", "intern", "degree", "university", "college", "school", 
@@ -188,6 +201,14 @@ def validate_resume_content(text: str) -> tuple[bool, str]:
             "Wrong document uploaded: The document does not appear to be a resume. "
             "Please ensure you are uploading a valid resume containing standard sections "
             "such as Education, Experience, and Skills."
+        )
+
+    # Check 5: Reject documents that only look like technical notes/activity summaries
+    # (for example: skills + projects lists) but miss identity and core resume history.
+    if not has_contact_signal and not has_education_or_experience:
+        return False, (
+            "Wrong document uploaded: The document is missing both contact details and "
+            "core resume sections like Education or Experience. Please upload a full resume/CV."
         )
 
     return True, ""
