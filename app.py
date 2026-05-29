@@ -531,8 +531,28 @@ def analyze():
                 analysis_category = user_pref.preferred_category
                 preference_applied = True
 
-        live_jobs = fetch_real_jobs(f"{analysis_category} jobs", location="Remote")
-        live_jobs.extend(fetch_real_jobs(f"{analysis_category} internships", location="Remote"))
+        # Fetch jobs and internships in parallel to prevent 502 gateway timeouts
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        live_jobs = []
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            future_jobs = executor.submit(fetch_real_jobs, f"{analysis_category} jobs", "Remote")
+            future_internships = executor.submit(fetch_real_jobs, f"{analysis_category} internships", "Remote")
+            
+            try:
+                # Limit waiting time to 10 seconds max per request (running concurrently)
+                jobs_res = future_jobs.result(timeout=10)
+                if jobs_res:
+                    live_jobs.extend(jobs_res)
+            except Exception as e:
+                logger.warning(f"Error fetching live jobs: {e}")
+
+            try:
+                intern_res = future_internships.result(timeout=10)
+                if intern_res:
+                    live_jobs.extend(intern_res)
+            except Exception as e:
+                logger.warning(f"Error fetching live internships: {e}")
+
 
         applied_set = set()
         apps = Application.query.filter_by(user_id=current_user.id).all()
