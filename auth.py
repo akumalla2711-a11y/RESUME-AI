@@ -68,12 +68,18 @@ def signup():
     db.session.add(user)
     db.session.commit()
 
-    # Trigger welcome email safely
+    # Trigger welcome email safely in a background thread to prevent blocking
     try:
         from engine.email_service import send_welcome_email
-        send_welcome_email(user.email, user.name)
+        import threading
+        email_thread = threading.Thread(
+            target=send_welcome_email,
+            args=(user.email, user.name)
+        )
+        email_thread.daemon = True
+        email_thread.start()
     except Exception as email_err:
-        print(f"Welcome email error: {email_err}")
+        print(f"Welcome email thread error: {email_err}")
 
     # Auto-login after signup
     login_user(user, remember=True)
@@ -170,13 +176,19 @@ def google_verify():
                 print(f"DB Error: {dbe}")
                 return jsonify({"error": f"DB Error: {str(dbe)}"}), 500
             
-            # Send welcome email to new Google user
+            # Send welcome email to new Google user in background thread
             if is_new_google_user:
                 try:
                     from engine.email_service import send_welcome_email
-                    send_welcome_email(user.email, user.name)
+                    import threading
+                    email_thread = threading.Thread(
+                        target=send_welcome_email,
+                        args=(user.email, user.name)
+                    )
+                    email_thread.daemon = True
+                    email_thread.start()
                 except Exception as email_err:
-                    print(f"Welcome email error for Google user: {email_err}")
+                    print(f"Welcome email thread error for Google user: {email_err}")
             
         login_user(user, remember=True)
         return jsonify({"success": True, "message": f"Welcome, {name}!"})
@@ -332,12 +344,18 @@ def employer_register():
     db.session.add(employer)
     db.session.commit()
 
-    # Trigger welcome email safely
+    # Trigger welcome email safely in background thread
     try:
         from engine.email_service import send_welcome_email
-        send_welcome_email(user.email, user.name)
+        import threading
+        email_thread = threading.Thread(
+            target=send_welcome_email,
+            args=(user.email, user.name)
+        )
+        email_thread.daemon = True
+        email_thread.start()
     except Exception as email_err:
-        print(f"Welcome email error for Employer: {email_err}")
+        print(f"Welcome email thread error for Employer: {email_err}")
 
     login_user(user, remember=True)
     return jsonify({

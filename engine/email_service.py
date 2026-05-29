@@ -108,7 +108,7 @@ ResumeAI Team
         msg.attach(MIMEText(text_body, "plain"))
         msg.attach(MIMEText(html_body, "html"))
 
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=5.0) as smtp:
             smtp.login(config["username"], config["password"])
             smtp.send_message(msg)
 
@@ -329,7 +329,7 @@ https://resume-ai-8xd3.onrender.com
         msg.attach(MIMEText(text_body, "plain"))
         msg.attach(MIMEText(html_body, "html"))
 
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=5.0) as smtp:
             smtp.login(config["username"], config["password"])
             smtp.send_message(msg)
 

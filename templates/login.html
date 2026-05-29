@@ -380,6 +380,18 @@
             }
         }
 
+        // Add Enter key listeners to inputs for desktop/laptop users
+        ['name-input', 'email-input', 'password-input'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        submitAuth();
+                    }
+                });
+            }
+        });
+
         // --- GOOGLE OAUTH ---
         async function handleGoogleCredentialResponse(response) {
             try {
