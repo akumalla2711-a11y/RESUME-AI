@@ -1706,8 +1706,12 @@ img { max-width: 100%; }
     }
 }
 
-/* ── Responsive ────────────────────────────────────────────────── */
 @media (max-width: 768px) {
+    body.results-mode {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+    }
+
     .navbar {
         padding: 10px 0;
     }
