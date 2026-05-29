@@ -101,8 +101,8 @@ text
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/resume-screening-system.git
-cd resume-screening-system
+git clone https://github.com/akumalla2711-a11y/FUTURE_ML_03.git
+cd FUTURE_ML_03
 2. Create Virtual Environment (Recommended)
 bash
 # Windows
