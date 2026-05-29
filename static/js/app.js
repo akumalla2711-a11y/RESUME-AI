@@ -223,12 +223,7 @@
         if (files.length > 0) handleFileSelect(files[0]);
     });
 
-    // Click to upload
-    uploadZone.addEventListener("click", () => fileInput.click());
-    uploadBrowse.addEventListener("click", (e) => {
-        e.stopPropagation();
-        fileInput.click();
-    });
+    // Click to upload (handled natively by the transparent absolute overlay of fileInput)
 
     fileInput.addEventListener("change", () => {
         if (fileInput.files.length > 0) handleFileSelect(fileInput.files[0]);
