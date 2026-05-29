@@ -390,3 +390,47 @@ def employer_login():
         "message": f"Welcome back, {user.name}!",
         "user": user.to_dict(),
     })
+
+
+@auth_bp.route("/test-email")
+def test_email_route():
+    """Diagnostic route to test SMTP credentials and send a test email."""
+    email = request.args.get("email")
+    if not email:
+        return jsonify({
+            "status": "error",
+            "message": "Please provide an email parameter, e.g., /auth/test-email?email=your-email@gmail.com"
+        }), 400
+        
+    from engine.email_service import _get_mail_config, send_welcome_email
+    config = _get_mail_config()
+    
+    # Hide password for safety
+    masked_pw = config["password"][:3] + "..." if config["password"] else "None"
+    
+    try:
+        # We call the function to see if it succeeds or fails
+        success = send_welcome_email(email, "Diagnostic Test User")
+        return jsonify({
+            "status": "success" if success else "failed",
+            "config_detected": {
+                "username": config["username"],
+                "password_length": len(config["password"]) if config["password"] else 0,
+                "password_masked": masked_pw,
+                "from_name": config["from_name"]
+            },
+            "message": "Email sent successfully!" if success else "Email sending returned False. Check if email credentials are configured in your environment."
+        })
+    except Exception as e:
+        import traceback
+        err_detail = traceback.format_exc()
+        return jsonify({
+            "status": "error",
+            "config_detected": {
+                "username": config["username"],
+                "password_length": len(config["password"]) if config["password"] else 0,
+                "from_name": config["from_name"]
+            },
+            "error_message": str(e),
+            "traceback": err_detail
+        }), 500
