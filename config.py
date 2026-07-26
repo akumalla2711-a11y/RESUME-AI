@@ -70,8 +70,22 @@ class Config:
     _database_url = os.environ.get("DATABASE_URL", "").strip()
     if _database_url.startswith("postgres://"):
         _database_url = _database_url.replace("postgres://", "postgresql://", 1)
+        
+    # Prevent infinite hangs if the database is unreachable (e.g., Supabase IPv4 issue)
+    if "postgresql" in _database_url:
+        if "?" not in _database_url:
+            _database_url += "?connect_timeout=10"
+        else:
+            _database_url += "&connect_timeout=10"
+            
     SQLALCHEMY_DATABASE_URI = _database_url or f"sqlite:///{BASE_DIR / 'data' / 'resumeai.db'}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+    # Required for Supabase PgBouncer pooler (port 6543) to prevent connection drops
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+    }
 
     # JSearch API (RapidAPI)
     JSEARCH_API_KEY = os.environ.get("JSEARCH_API_KEY", "")

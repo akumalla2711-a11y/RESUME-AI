@@ -409,14 +409,25 @@ def index():
 def login_page():
     if current_user.is_authenticated:
         from flask import redirect, url_for
-
         return redirect(url_for("index"))
     return render_template("login.html", google_client_id=cfg.GOOGLE_CLIENT_ID)
 
 
 @app.route("/api/health")
 def health():
-    return jsonify({"status": "ok", "message": "Resume Analyzer is running"})
+    try:
+        from sqlalchemy import text
+        db.session.execute(text("SELECT 1"))
+        db_status = "connected"
+    except Exception as e:
+        logger.warning(f"Health check DB ping failed: {e}")
+        db_status = "error"
+        
+    return jsonify({
+        "status": "ok", 
+        "message": "Resume Analyzer is running",
+        "database": db_status
+    })
 
 
 @app.route("/api/categories")
