@@ -66,6 +66,7 @@
     let currentQualityReport = null;
 
     let selectedFile = null;
+    let selectedFileBuffer = null;
     let analysisInFlight = false;
     const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
     const MAX_UPLOAD_LABEL = "8 MB";
@@ -83,10 +84,11 @@
         }
     }
 
-    async function postAnalyzeWithRetry(formData, retries = 1) {
+    async function postAnalyzeWithRetry(createFormDataFn, retries = 1) {
         let lastError = null;
         for (let attempt = 0; attempt <= retries; attempt++) {
             try {
+                const formData = createFormDataFn();
                 return await fetch("/api/analyze", {
                     method: "POST",
                     body: formData,
@@ -247,6 +249,12 @@
         uploadZone.style.display = "none";
         filePreview.style.display = "block";
 
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            selectedFileBuffer = e.target.result;
+        };
+        reader.readAsArrayBuffer(file);
+
         // Best effort warm-up ping for free-tier cold starts (done asynchronously on file select)
         fetch("/api/health", { cache: "no-store" }).catch(() => {});
     }
@@ -255,6 +263,7 @@
 
     function resetUpload() {
         selectedFile = null;
+        selectedFileBuffer = null;
         fileInput.value = "";
         uploadZone.style.display = "block";
         filePreview.style.display = "none";
@@ -276,6 +285,10 @@
 
         if (!selectedFile) {
             showError("Please select a resume file first.");
+            return;
+        }
+        if (!selectedFileBuffer) {
+            showError("Please wait a moment for the file to load, or select the resume again.");
             return;
         }
 
@@ -304,14 +317,18 @@
         }, 2000);
 
         try {
-            const formData = new FormData();
-            formData.append("resume", selectedFile);
-            if (confirmedCategory) {
-                formData.append("confirmed_category", confirmedCategory);
-                formData.append("remember_category", String(rememberCategory));
-            }
+            const createFormDataFn = () => {
+                const formData = new FormData();
+                const safeFile = new File([selectedFileBuffer], selectedFile.name, { type: selectedFile.type || "application/octet-stream" });
+                formData.append("resume", safeFile);
+                if (confirmedCategory) {
+                    formData.append("confirmed_category", confirmedCategory);
+                    formData.append("remember_category", String(rememberCategory));
+                }
+                return formData;
+            };
 
-            const response = await postAnalyzeWithRetry(formData, 1);
+            const response = await postAnalyzeWithRetry(createFormDataFn, 1);
 
             clearInterval(msgInterval);
             const rawResponse = await response.text();
