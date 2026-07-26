@@ -89,7 +89,7 @@
         for (let attempt = 0; attempt <= retries; attempt++) {
             try {
                 const formData = createFormDataFn();
-                return await fetch("/api/analyze", {
+                return await fetch("/api/process-resume", {
                     method: "POST",
                     body: formData,
                     credentials: "same-origin",
@@ -367,7 +367,7 @@
             const msg = (err && err.message) ? err.message : "Analysis failed. Please try again.";
             if (msg === "Failed to fetch" || msg === "Load failed") {
                 showError(
-                    `Network issue while uploading. On mobile, open in Chrome/Safari (not in-app browser), use stable internet, and keep file under ${MAX_UPLOAD_LABEL}.`
+                    `Network or ad-blocker issue. Please disable ad-blockers (like Brave Shields or AdGuard), use stable internet, and keep file under ${MAX_UPLOAD_LABEL}.`
                 );
             } else {
                 showError(msg);

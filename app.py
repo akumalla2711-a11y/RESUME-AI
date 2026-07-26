@@ -437,7 +437,7 @@ def categories():
     return jsonify({"categories": cats or []})
 
 
-@app.route("/api/analyze", methods=["POST"])
+@app.route("/api/process-resume", methods=["POST"])
 @limiter.limit("10 per minute", key_func=_rate_limit_key)
 @jwt_required
 def analyze():
