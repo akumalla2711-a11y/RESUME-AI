@@ -246,6 +246,9 @@
         fileSize.textContent = formatFileSize(file.size);
         uploadZone.style.display = "none";
         filePreview.style.display = "block";
+
+        // Best effort warm-up ping for free-tier cold starts (done asynchronously on file select)
+        fetch("/api/health", { cache: "no-store" }).catch(() => {});
     }
 
     fileRemove.addEventListener("click", resetUpload);
@@ -301,12 +304,6 @@
         }, 2000);
 
         try {
-            try {
-                await fetch("/api/health", { cache: "no-store" });
-            } catch (_) {
-                // Best effort warm-up ping for free-tier cold starts.
-            }
-
             const formData = new FormData();
             formData.append("resume", selectedFile);
             if (confirmedCategory) {
