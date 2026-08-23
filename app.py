@@ -54,14 +54,17 @@ except Exception:  # pragma: no cover
 bypass_proxies()
 
 
-# Logging
+# Logging — file handler is optional (Render's filesystem is ephemeral/read-only)
+_log_handlers = [logging.StreamHandler()]
+try:
+    _log_handlers.append(logging.FileHandler("resume_processing.log", encoding="utf-8"))
+except OSError:
+    pass  # file logging unavailable (e.g., Render); console-only is fine
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler("resume_processing.log", encoding="utf-8"),
-        logging.StreamHandler(),
-    ],
+    handlers=_log_handlers,
 )
 logger = logging.getLogger(__name__)
 
@@ -73,6 +76,7 @@ app.config["MAX_CONTENT_LENGTH"] = cfg.MAX_CONTENT_LENGTH
 app.config["SECRET_KEY"] = cfg.SECRET_KEY
 app.config["SQLALCHEMY_DATABASE_URI"] = cfg.SQLALCHEMY_DATABASE_URI
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = cfg.SQLALCHEMY_TRACK_MODIFICATIONS
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = cfg.SQLALCHEMY_ENGINE_OPTIONS
 CORS(app, origins=cfg.TRUSTED_DOMAINS)
 
 
@@ -341,29 +345,32 @@ def _set_user_preference(user_id: int, category: str, source: str = "user_confir
 
 
 def _append_correction_csv(record: dict):
-    csv_path = cfg.DATA_DIR / "user_corrections.csv"
-    csv_path.parent.mkdir(parents=True, exist_ok=True)
-    file_exists = csv_path.exists()
-    fieldnames = [
-        "created_at",
-        "user_id",
-        "predicted_category",
-        "predicted_confidence",
-        "confirmed_category",
-        "cleaned_resume_text",
-    ]
-    with open(csv_path, "a", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        if not file_exists:
-            writer.writeheader()
-        writer.writerow({
-            "created_at": record.get("created_at"),
-            "user_id": record.get("user_id"),
-            "predicted_category": record.get("predicted_category"),
-            "predicted_confidence": record.get("predicted_confidence"),
-            "confirmed_category": record.get("confirmed_category"),
-            "cleaned_resume_text": record.get("cleaned_resume_text"),
-        })
+    try:
+        csv_path = cfg.DATA_DIR / "user_corrections.csv"
+        csv_path.parent.mkdir(parents=True, exist_ok=True)
+        file_exists = csv_path.exists()
+        fieldnames = [
+            "created_at",
+            "user_id",
+            "predicted_category",
+            "predicted_confidence",
+            "confirmed_category",
+            "cleaned_resume_text",
+        ]
+        with open(csv_path, "a", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            if not file_exists:
+                writer.writeheader()
+            writer.writerow({
+                "created_at": record.get("created_at"),
+                "user_id": record.get("user_id"),
+                "predicted_category": record.get("predicted_category"),
+                "predicted_confidence": record.get("predicted_confidence"),
+                "confirmed_category": record.get("confirmed_category"),
+                "cleaned_resume_text": record.get("cleaned_resume_text"),
+            })
+    except OSError as e:
+        logger.warning(f"Could not write correction CSV (ephemeral filesystem?): {e}")
 
 
 def _log_category_feedback(
